@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f6f2">
+  <title>Trợ lý học bài · Prototype T2</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1d2925;
+      --muted: #64716b;
+      --line: #dce4de;
+      --paper: #fff;
+      --page: #f5f6f2;
+      --green: #176b4a;
+      --green-soft: #e8f4ed;
+      --amber: #805a0b;
+      --amber-soft: #fff5dd;
+      --blue: #285d83;
+      --blue-soft: #eaf3f9;
+      --shadow: 0 12px 32px rgb(27 49 37 / 7%);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--page); line-height: 1.5; }
+    button { font: inherit; }
+    .topbar { background: var(--paper); border-bottom: 1px solid var(--line); }
+    .topbar-inner { max-width: 1120px; margin: auto; padding: 18px 24px; }
+    .eyebrow { color: var(--green); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { margin: 3px 0 2px; font-size: clamp(20px, 3vw, 26px); }
+    .subtitle { margin: 0; color: var(--muted); font-size: 14px; }
+
+    main { max-width: 1120px; margin: auto; padding: 22px 24px 32px; }
+    .scenario-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-bottom: 16px; }
+    .scenario-label { margin-right: 4px; color: var(--muted); font-size: 13px; font-weight: 700; }
+    .scenario-button, .button {
+      min-height: 40px; padding: 8px 13px; border: 1px solid var(--line);
+      border-radius: 10px; background: var(--paper); color: var(--ink);
+      cursor: pointer; transition: background .15s, border-color .15s, transform .15s;
+    }
+    .scenario-button:hover, .button:hover { border-color: #9fb6a8; transform: translateY(-1px); }
+    .scenario-button[aria-pressed="true"] { border-color: var(--green); background: var(--green); color: #fff; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(260px, .8fr); gap: 16px; align-items: start; }
+    .card { overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); box-shadow: var(--shadow); }
+    .course-head { display: flex; justify-content: space-between; gap: 12px; padding: 15px 18px; border-bottom: 1px solid var(--line); }
+    .course-name { font-weight: 750; }
+    .course-meta { color: var(--muted); font-size: 12px; }
+    .online { align-self: center; color: var(--green); font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .online::before { display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: #2e9b68; content: ""; }
+    .conversation { display: flex; min-height: 350px; flex-direction: column; gap: 13px; padding: 20px; }
+    .message { max-width: 88%; padding: 12px 14px; border-radius: 15px; font-size: 14px; }
+    .message.user { align-self: flex-end; border-bottom-right-radius: 4px; background: var(--blue); color: white; }
+    .message.assistant { align-self: flex-start; border: 1px solid var(--line); border-bottom-left-radius: 4px; background: #fbfcfa; }
+    .assistant-label { margin-bottom: 5px; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+    .confidence { display: inline-flex; gap: 6px; align-items: center; margin: 0 0 8px; padding: 4px 9px; border-radius: 99px; background: var(--amber-soft); color: var(--amber); font-size: 12px; font-weight: 700; }
+    .confidence::before { content: "●"; font-size: 9px; }
+    .evidence { margin-top: 10px; padding: 9px 11px; border-left: 3px solid #9ab5a4; background: #f2f7f3; color: #42534a; font-size: 12px; }
+    .evidence button { padding: 0; border: 0; background: transparent; color: var(--green); font-weight: 700; text-decoration: underline; cursor: pointer; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .button.primary { border-color: var(--green); background: var(--green); color: #fff; }
+    .button.soft { border-color: #c4d7ca; background: var(--green-soft); color: #15583f; }
+    .button:focus-visible, .scenario-button:focus-visible, input:focus-visible { outline: 3px solid #84b9d1; outline-offset: 2px; }
+    .notice { margin-top: 10px; padding: 10px 12px; border: 1px solid #edd79b; border-radius: 10px; background: var(--amber-soft); color: #62480e; font-size: 13px; }
+    .success { border-color: #b7d9c4; background: var(--green-soft); color: #20583c; }
+    .composer { display: flex; gap: 8px; padding: 13px 16px; border-top: 1px solid var(--line); }
+    .composer input { width: 100%; min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font: inherit; }
+    .composer button { flex: 0 0 auto; }
+    .side { display: grid; gap: 12px; }
+    .side-card { padding: 16px; }
+    .side-card h2 { margin: 0 0 8px; font-size: 15px; }
+    .side-card p { margin: 0; color: var(--muted); font-size: 13px; }
+    .boundary { display: grid; gap: 8px; margin-top: 12px; }
+    .boundary div { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; }
+    .badge { flex: 0 0 auto; padding: 2px 7px; border-radius: 99px; background: var(--green-soft); color: var(--green); font-size: 11px; font-weight: 800; }
+    .badge.ask { background: var(--amber-soft); color: var(--amber); }
+    .footnote { margin: 14px 2px 0; color: var(--muted); font-size: 12px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
+
+    @media (max-width: 760px) {
+      main { padding: 16px 14px 24px; }
+      .topbar-inner { padding: 15px 14px; }
+      .layout { grid-template-columns: 1fr; }
+      .conversation { min-height: 300px; padding: 15px; }
+      .message { max-width: 96%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="eyebrow">LAB5 · Track T2 Giáo dục</div>
+      <h1>Trợ lý học bài — khi AI không chắc</h1>
+      <p class="subtitle">Prototype tương tác · dữ liệu dựng · không gửi câu hỏi ra ngoài</p>
+    </div>
+  </header>
+
+  <main>
+    <nav class="scenario-bar" aria-label="Chọn tình huống demo">
+      <span class="scenario-label">Thử tình huống:</span>
+      <button class="scenario-button" type="button" data-scenario="assignment" aria-pressed="true">Bài tập đang mở</button>
+      <button class="scenario-button" type="button" data-scenario="missing" aria-pressed="false">Nguồn không có</button>
+    </nav>
+
+    <div class="layout">
+      <section class="card" aria-label="Cuộc trò chuyện với trợ lý học bài">
+        <div class="course-head">
+          <div>
+            <div class="course-name">Nhập môn phân tích dữ liệu</div>
+            <div class="course-meta">Buổi 3 · Thống kê mô tả · Học viên đang học lúc 22:15</div>
+          </div>
+          <div class="online">Trợ lý AI</div>
+        </div>
+        <div id="conversation" class="conversation" aria-live="polite" aria-relevant="additions text"></div>
+        <form id="composer" class="composer">
+          <label class="sr-only" for="question">Nhập câu hỏi</label>
+          <input id="question" name="question" autocomplete="off" placeholder="Thử hỏi về bài tập hoặc tài liệu…" />
+          <button class="button primary" type="submit">Gửi</button>
+        </form>
+      </section>
+
+      <aside class="side" aria-label="Quyền hạn và căn cứ của trợ lý">
+        <section class="card side-card">
+          <h2>AI được làm gì?</h2>
+          <p>Trợ lý chỉ dựa vào tài liệu buổi 3 và trang khoá học. Đây là mô phỏng giao diện, không phải AI đang chạy.</p>
+          <div class="boundary">
+            <div><span class="badge">Tự làm</span><span>Tra cứu và trích dẫn tài liệu đã có.</span></div>
+            <div><span class="badge ask">Giới hạn</span><span>Với bài đang mở: chỉ gợi ý bước đầu, không đưa hay xác nhận đáp số.</span></div>
+            <div><span class="badge ask">Chuyển người</span><span>TA trực 08:00–22:00; ngoài giờ, yêu cầu được ghi vào hàng chờ mô phỏng.</span></div>
+          </div>
+        </section>
+        <section class="card side-card">
+          <h2>Nguyên tắc trên màn hình</h2>
+          <p><b>G10 · Thu hẹp khi nghi ngờ:</b> AI hỏi hoặc dừng thay vì đoán.</p>
+          <p style="margin-top:8px"><b>G11 · Giải thích vì sao:</b> câu trả lời cho biết căn cứ từ mục tài liệu nào.</p>
+          <p style="margin-top:8px"><b>PAIR · Graceful Failure:</b> thiếu căn cứ thì có đường hỏi TA.</p>
+        </section>
+      </aside>
+    </div>
+    <p class="footnote">Mọi thao tác chỉ thay đổi nội dung trên trang này. Nút “Gửi TA” mô phỏng yêu cầu chuyển người, không gửi tin nhắn thật.</p>
+  </main>
+
+  <script>
+    const conversation = document.querySelector("#conversation");
+    const input = document.querySelector("#question");
+    const scenarioButtons = document.querySelectorAll("[data-scenario]");
+    let activeScenario = "assignment";
+    let followUpShown = false;
+    let taRequested = false;
+    let evidenceExpanded = false;
+    let sectionsExpanded = false;
+
+    function render() {
+      scenarioButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.scenario === activeScenario));
+      });
+
+      const assignment = activeScenario === "assignment";
+      const userText = assignment
+        ? "Em giải luôn bài tập 3 đang mở được không? Cho em đáp án cuối cùng."
+        : "Slide 12 của buổi 3 nói gì ạ?";
+
+      const response = assignment
+        ? `<div class="confidence">Giới hạn rõ: bài tập đang mở</div>
+           <div>Mình không thể đưa hoặc xác nhận đáp án cho bài đang mở. Mình có thể giúp bạn bắt đầu: hãy xác định có bao nhiêu giá trị trong danh sách ở §3.5, rồi thử tính tổng trước. Bạn làm thử bước đó nhé?</div>
+           <div class="evidence">${evidenceExpanded ? "§3.5 ghi bài tập 3 với 8 mức lương dựng: 9, 10, 10, 11, 12, 12, 13, 45 (triệu đồng). Bài tập đang mở; trợ lý chỉ gợi ý cách làm, không đưa đáp án." : `Căn cứ: <button type="button" data-action="evidence">Tài liệu buổi 3 · §3.5 Bài tập 3</button>. Đây là gợi ý, không phải lời giải.`}</div>
+           ${followUpShown ? `<div class="notice success">Gợi ý tiếp: hãy cộng 8 mức lương trước, sau đó chia tổng cho 8 để tính trung bình. Bạn tự tính kết quả rồi gửi lại để mình kiểm tra cách làm (không xác nhận đáp số bài đang mở).</div>` : ""}
+           ${taRequested ? `<div class="notice success" role="status">Yêu cầu đã được thêm vào hàng chờ TA (mô phỏng). Giờ TA: 08:00–22:00. Bạn vẫn có thể tiếp tục xem gợi ý trong lúc chờ.</div>` : ""}
+           <div class="actions">
+             <button class="button soft" type="button" data-action="hint">Gợi ý thêm một bước</button>
+             <button class="button" type="button" data-action="ta">Gửi câu hỏi cho TA</button>
+           </div>`
+        : `<div class="confidence">Không đủ căn cứ để trả lời</div>
+           <div>Tài liệu buổi 3 hiện có các mục §3.1–§3.5, không có slide được đánh số nên mình không thể xác định “slide 12” nói gì. Bạn có thể hỏi theo mục tài liệu, hoặc gửi câu hỏi cho TA/giảng viên.</div>
+           <div class="evidence">${evidenceExpanded ? "Đề bài xác nhận tài liệu buổi 3 chỉ có các mục §3.1–§3.5, không có slide đánh số." : `Căn cứ đã kiểm tra: <button type="button" data-action="evidence">Tài liệu buổi 3 · §3.1–§3.5</button>. Không tìm thấy slide 12.`}</div>
+           ${sectionsExpanded ? `<div class="notice">§3.1 Trung bình cộng · §3.2 Trung vị · §3.3 Phương sai và độ lệch chuẩn · §3.4 Giá trị ngoại lai · §3.5 Bài tập 3</div>` : ""}
+           ${taRequested ? `<div class="notice success" role="status">Yêu cầu đã được thêm vào hàng chờ TA (mô phỏng). Giờ TA: 08:00–22:00.</div>` : ""}
+           <div class="actions">
+             <button class="button soft" type="button" data-action="section">Xem các mục §3.1–§3.5</button>
+             <button class="button" type="button" data-action="ta">Gửi câu hỏi cho TA</button>
+           </div>`;
+
+      conversation.innerHTML = `
+        <div class="message user">${userText}</div>
+        <div class="message assistant">
+          <div class="assistant-label">Trợ lý học bài · AI</div>
+          ${response}
+        </div>`;
+    }
+
+    function handleQuestion(text) {
+      const normalized = text.toLowerCase();
+      if (normalized.includes("slide") || normalized.includes("buổi 4") || normalized.includes("buổi 7")) {
+        activeScenario = "missing";
+        followUpShown = false;
+        taRequested = false;
+      } else {
+        activeScenario = "assignment";
+        followUpShown = false;
+        taRequested = false;
+      }
+      evidenceExpanded = false;
+      sectionsExpanded = false;
+      render();
+      const userMessage = document.createElement("div");
+      userMessage.className = "message user";
+      userMessage.textContent = text;
+      conversation.prepend(userMessage);
+    }
+
+    scenarioButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        activeScenario = button.dataset.scenario;
+        followUpShown = false;
+        taRequested = false;
+        evidenceExpanded = false;
+        sectionsExpanded = false;
+        render();
+      });
+    });
+
+    conversation.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-action]");
+      if (!button) return;
+
+      if (button.dataset.action === "hint") followUpShown = true;
+      if (button.dataset.action === "ta") taRequested = true;
+      if (button.dataset.action === "section") sectionsExpanded = true;
+      if (button.dataset.action === "evidence") evidenceExpanded = true;
+      render();
+    });
+
+    document.querySelector("#composer").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const text = input.value.trim();
+      if (!text) {
+        input.focus();
+        return;
+      }
+      handleQuestion(text);
+      input.value = "";
+      input.focus();
+    });
+
+    render();
+  </script>
+</body>
+</html>
