@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f5f6f2">
-  <title>Trợ lý học bài · Prototype T2</title>
+  <title>Trợ lý học bài · Prototype T2 · 8 Kịch bản Rủi ro</title>
   <style>
     :root {
       color-scheme: light;
@@ -17,6 +17,8 @@
       --green-soft: #e8f4ed;
       --amber: #805a0b;
       --amber-soft: #fff5dd;
+      --red: #a52828;
+      --red-soft: #fde8e8;
       --blue: #285d83;
       --blue-soft: #eaf3f9;
       --shadow: 0 12px 32px rgb(27 49 37 / 7%);
@@ -27,87 +29,296 @@
     body { margin: 0; color: var(--ink); background: var(--page); line-height: 1.5; }
     button { font: inherit; }
     .topbar { background: var(--paper); border-bottom: 1px solid var(--line); }
-    .topbar-inner { max-width: 1120px; margin: auto; padding: 18px 24px; }
+    .topbar-inner { max-width: 1200px; margin: auto; padding: 16px 24px; }
     .eyebrow { color: var(--green); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-    h1 { margin: 3px 0 2px; font-size: clamp(20px, 3vw, 26px); }
-    .subtitle { margin: 0; color: var(--muted); font-size: 14px; }
+    h1 { margin: 4px 0 2px; font-size: clamp(20px, 2.5vw, 25px); }
+    .subtitle { margin: 0; color: var(--muted); font-size: 13.5px; }
 
-    main { max-width: 1120px; margin: auto; padding: 22px 24px 32px; }
-    .scenario-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-bottom: 16px; }
-    .scenario-label { margin-right: 4px; color: var(--muted); font-size: 13px; font-weight: 700; }
-    .scenario-button, .button {
-      min-height: 40px; padding: 8px 13px; border: 1px solid var(--line);
-      border-radius: 10px; background: var(--paper); color: var(--ink);
-      cursor: pointer; transition: background .15s, border-color .15s, transform .15s;
+    main { max-width: 1200px; margin: auto; padding: 20px 24px 36px; }
+    
+    .scenarios-container {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 3%);
     }
-    .scenario-button:hover, .button:hover { border-color: #9fb6a8; transform: translateY(-1px); }
-    .scenario-button[aria-pressed="true"] { border-color: var(--green); background: var(--green); color: #fff; }
-    .layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(260px, .8fr); gap: 16px; align-items: start; }
-    .card { overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); box-shadow: var(--shadow); }
-    .course-head { display: flex; justify-content: space-between; gap: 12px; padding: 15px 18px; border-bottom: 1px solid var(--line); }
-    .course-name { font-weight: 750; }
+    .scenario-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .scenario-title {
+      font-size: 13px;
+      font-weight: 750;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 8px;
+    }
+    .scenario-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 9px 12px;
+      border: 1.5px solid var(--line);
+      border-radius: 10px;
+      background: var(--paper);
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+      transition: all .15s ease;
+    }
+    .scenario-btn:hover {
+      border-color: #9fb6a8;
+      background: #fafcfb;
+      transform: translateY(-1px);
+    }
+    .scenario-btn[aria-pressed="true"] {
+      border-color: var(--green);
+      background: var(--green-soft);
+      box-shadow: 0 0 0 1px var(--green);
+    }
+    .scenario-btn-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+    .scenario-btn-num {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .scenario-btn[aria-pressed="true"] .scenario-btn-num {
+      color: var(--green);
+    }
+    .scenario-btn-cost {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 99px;
+    }
+    .cost-unacceptable { background: var(--red-soft); color: var(--red); }
+    .cost-repairable { background: var(--amber-soft); color: var(--amber); }
+    .cost-light { background: var(--blue-soft); color: var(--blue); }
+    .scenario-btn-desc {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(300px, .9fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+    .course-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fafbfa;
+    }
+    .course-name { font-weight: 750; font-size: 15px; }
     .course-meta { color: var(--muted); font-size: 12px; }
-    .online { align-self: center; color: var(--green); font-size: 12px; font-weight: 700; white-space: nowrap; }
-    .online::before { display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: #2e9b68; content: ""; }
-    .conversation { display: flex; min-height: 350px; flex-direction: column; gap: 13px; padding: 20px; }
-    .message { max-width: 88%; padding: 12px 14px; border-radius: 15px; font-size: 14px; }
-    .message.user { align-self: flex-end; border-bottom-right-radius: 4px; background: var(--blue); color: white; }
-    .message.assistant { align-self: flex-start; border: 1px solid var(--line); border-bottom-left-radius: 4px; background: #fbfcfa; }
-    .assistant-label { margin-bottom: 5px; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
-    .confidence { display: inline-flex; gap: 6px; align-items: center; margin: 0 0 8px; padding: 4px 9px; border-radius: 99px; background: var(--amber-soft); color: var(--amber); font-size: 12px; font-weight: 700; }
+    .online {
+      align-self: center;
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .online::before {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      margin-right: 6px;
+      border-radius: 50%;
+      background: #2e9b68;
+      content: "";
+    }
+    
+    .conversation {
+      display: flex;
+      min-height: 380px;
+      flex-direction: column;
+      gap: 14px;
+      padding: 20px;
+      max-height: 520px;
+      overflow-y: auto;
+    }
+    .message {
+      max-width: 90%;
+      padding: 12px 15px;
+      border-radius: 15px;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .message.user {
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+      background: var(--blue);
+      color: white;
+    }
+    .message.assistant {
+      align-self: flex-start;
+      border: 1px solid var(--line);
+      border-bottom-left-radius: 4px;
+      background: #fcfdfc;
+    }
+    .assistant-label {
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .confidence {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      margin: 0 0 10px;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .confidence.warn { background: var(--amber-soft); color: var(--amber); }
+    .confidence.danger { background: var(--red-soft); color: var(--red); }
+    .confidence.info { background: var(--blue-soft); color: var(--blue); }
     .confidence::before { content: "●"; font-size: 9px; }
-    .evidence { margin-top: 10px; padding: 9px 11px; border-left: 3px solid #9ab5a4; background: #f2f7f3; color: #42534a; font-size: 12px; }
-    .evidence button { padding: 0; border: 0; background: transparent; color: var(--green); font-weight: 700; text-decoration: underline; cursor: pointer; }
-    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+    .evidence {
+      margin-top: 12px;
+      padding: 9px 12px;
+      border-left: 3px solid #9ab5a4;
+      background: #f2f7f3;
+      color: #384b42;
+      font-size: 12px;
+    }
+    .evidence button {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--green);
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+    .button {
+      min-height: 38px;
+      padding: 7px 13px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--paper);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, border-color .15s, transform .15s;
+    }
+    .button:hover { border-color: #9fb6a8; transform: translateY(-1px); }
     .button.primary { border-color: var(--green); background: var(--green); color: #fff; }
     .button.soft { border-color: #c4d7ca; background: var(--green-soft); color: #15583f; }
-    .button:focus-visible, .scenario-button:focus-visible, input:focus-visible { outline: 3px solid #84b9d1; outline-offset: 2px; }
-    .notice { margin-top: 10px; padding: 10px 12px; border: 1px solid #edd79b; border-radius: 10px; background: var(--amber-soft); color: #62480e; font-size: 13px; }
-    .success { border-color: #b7d9c4; background: var(--green-soft); color: #20583c; }
-    .composer { display: flex; gap: 8px; padding: 13px 16px; border-top: 1px solid var(--line); }
-    .composer input { width: 100%; min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font: inherit; }
+    .button:focus-visible, .scenario-btn:focus-visible, input:focus-visible { outline: 3px solid #84b9d1; outline-offset: 2px; }
+    
+    .notice {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid #edd79b;
+      border-radius: 10px;
+      background: var(--amber-soft);
+      color: #62480e;
+      font-size: 13px;
+    }
+    .notice.success {
+      border-color: #b7d9c4;
+      background: var(--green-soft);
+      color: #1a5237;
+    }
+    .composer { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); background: #fff; }
+    .composer input {
+      width: 100%; min-width: 0; padding: 10px 13px;
+      border: 1px solid var(--line); border-radius: 10px; font: inherit; font-size: 14px;
+    }
     .composer button { flex: 0 0 auto; }
-    .side { display: grid; gap: 12px; }
+
+    .side { display: grid; gap: 14px; }
     .side-card { padding: 16px; }
-    .side-card h2 { margin: 0 0 8px; font-size: 15px; }
+    .side-card h2 { margin: 0 0 10px; font-size: 15px; color: var(--ink); }
     .side-card p { margin: 0; color: var(--muted); font-size: 13px; }
+    
+    .scenario-meta-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px; }
+    .scenario-meta-table td { padding: 5px 0; border-bottom: 1px solid #f0f2f0; vertical-align: top; }
+    .scenario-meta-table td:first-child { color: var(--muted); font-weight: 600; width: 95px; }
+
     .boundary { display: grid; gap: 8px; margin-top: 12px; }
     .boundary div { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; }
-    .badge { flex: 0 0 auto; padding: 2px 7px; border-radius: 99px; background: var(--green-soft); color: var(--green); font-size: 11px; font-weight: 800; }
+    .badge {
+      flex: 0 0 auto; padding: 2px 7px; border-radius: 99px;
+      background: var(--green-soft); color: var(--green); font-size: 11px; font-weight: 800;
+    }
     .badge.ask { background: var(--amber-soft); color: var(--amber); }
-    .footnote { margin: 14px 2px 0; color: var(--muted); font-size: 12px; }
+    .badge.danger { background: var(--red-soft); color: var(--red); }
+    
+    .footnote { margin: 16px 2px 0; color: var(--muted); font-size: 12px; }
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
 
-    @media (max-width: 760px) {
-      main { padding: 16px 14px 24px; }
-      .topbar-inner { padding: 15px 14px; }
+    @media (max-width: 860px) {
       .layout { grid-template-columns: 1fr; }
-      .conversation { min-height: 300px; padding: 15px; }
-      .message { max-width: 96%; }
+      .scenario-grid { grid-template-columns: 1fr 1fr; }
     }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    @media (max-width: 600px) {
+      main { padding: 14px 12px 24px; }
+      .scenario-grid { grid-template-columns: 1fr; }
+      .message { max-width: 98%; }
     }
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="topbar-inner">
-      <div class="eyebrow">LAB5 · Track T2 Giáo dục</div>
-      <h1>Trợ lý học bài — khi AI không chắc</h1>
-      <p class="subtitle">Prototype tương tác · dữ liệu dựng · không gửi câu hỏi ra ngoài</p>
+      <div class="eyebrow">LAB5 · Track T2 Giáo dục · Nhóm AI-T2</div>
+      <h1>Trợ lý học bài — Thiết kế UX cho 8 kịch bản rủi ro</h1>
+      <p class="subtitle">Đầy đủ 8 kịch bản trong spec.md (§2) · Áp dụng nguyên tắc HAX/PAIR · Giới hạn rủi ro an toàn</p>
     </div>
   </header>
 
   <main>
-    <nav class="scenario-bar" aria-label="Chọn tình huống demo">
-      <span class="scenario-label">Thử tình huống:</span>
-      <button class="scenario-button" type="button" data-scenario="assignment" aria-pressed="true">Bài tập đang mở</button>
-      <button class="scenario-button" type="button" data-scenario="missing" aria-pressed="false">Nguồn không có</button>
-    </nav>
+    <section class="scenarios-container" aria-label="Thanh điều hướng chọn 8 kịch bản">
+      <div class="scenario-header">
+        <span class="scenario-title">Chọn 1 trong 8 kịch bản trong đề bài:</span>
+        <span style="font-size:12px; color:var(--muted)">Nhấn nút để chạy thử kịch bản tương ứng</span>
+      </div>
+      <div class="scenario-grid" id="scenarioGrid"></div>
+    </section>
 
     <div class="layout">
-      <section class="card" aria-label="Cuộc trò chuyện với trợ lý học bài">
+      <section class="card" aria-label="Khung trò chuyện với trợ lý học bài">
         <div class="course-head">
           <div>
             <div class="course-name">Nhập môn phân tích dữ liệu</div>
@@ -118,134 +329,352 @@
         <div id="conversation" class="conversation" aria-live="polite" aria-relevant="additions text"></div>
         <form id="composer" class="composer">
           <label class="sr-only" for="question">Nhập câu hỏi</label>
-          <input id="question" name="question" autocomplete="off" placeholder="Thử hỏi về bài tập hoặc tài liệu…" />
+          <input id="question" name="question" autocomplete="off" placeholder="Gõ thử câu hỏi (ví dụ: 'buổi 4 học gì', 'slide 12', 'chán quá')..." />
           <button class="button primary" type="submit">Gửi</button>
         </form>
       </section>
 
-      <aside class="side" aria-label="Quyền hạn và căn cứ của trợ lý">
-        <section class="card side-card">
-          <h2>AI được làm gì?</h2>
-          <p>Trợ lý chỉ dựa vào tài liệu buổi 3 và trang khoá học. Đây là mô phỏng giao diện, không phải AI đang chạy.</p>
-          <div class="boundary">
-            <div><span class="badge">Tự làm</span><span>Tra cứu và trích dẫn tài liệu đã có.</span></div>
-            <div><span class="badge ask">Giới hạn</span><span>Với bài đang mở: chỉ gợi ý bước đầu, không đưa hay xác nhận đáp số.</span></div>
-            <div><span class="badge ask">Chuyển người</span><span>TA trực 08:00–22:00; ngoài giờ, yêu cầu được ghi vào hàng chờ mô phỏng.</span></div>
-          </div>
+      <aside class="side" aria-label="Thông tin phân tích UX và HAX/PAIR của kịch bản">
+        <section class="card side-card" id="scenarioInfoCard">
+          <h2>Phân tích kịch bản hiện tại</h2>
+          <table class="scenario-meta-table">
+            <tr>
+              <td>Kịch bản:</td>
+              <td id="metaTitle">1. Bài tập đang mở</td>
+            </tr>
+            <tr>
+              <td>Lớp rủi ro:</td>
+              <td id="metaLayer">③ Ngoài phạm vi / ④ Domain</td>
+            </tr>
+            <tr>
+              <td>Hậu quả lỗi:</td>
+              <td id="metaCost"><span class="badge danger">Không chấp nhận được</span></td>
+            </tr>
+            <tr>
+              <td>Hành vi xấu:</td>
+              <td id="metaBad" style="color:#8f2d2d;">AI đưa đáp án cuối cùng làm học viên chép bài.</td>
+            </tr>
+            <tr>
+              <td>HAX / PAIR:</td>
+              <td id="metaHAX"><b>G10</b> (Thu hẹp), <b>G11</b> (Giải thích), <b>G8/G9</b> (Gợi ý bước đầu).</td>
+            </tr>
+          </table>
         </section>
+
         <section class="card side-card">
-          <h2>Nguyên tắc trên màn hình</h2>
-          <p><b>G10 · Thu hẹp khi nghi ngờ:</b> AI hỏi hoặc dừng thay vì đoán.</p>
-          <p style="margin-top:8px"><b>G11 · Giải thích vì sao:</b> câu trả lời cho biết căn cứ từ mục tài liệu nào.</p>
-          <p style="margin-top:8px"><b>PAIR · Graceful Failure:</b> thiếu căn cứ thì có đường hỏi TA.</p>
+          <h2>Ranh giới tự chủ của AI</h2>
+          <div class="boundary">
+            <div><span class="badge">Tự làm</span><span>Tra cứu và trích dẫn mục §3.1–§3.5 đã học.</span></div>
+            <div><span class="badge ask">Giới hạn</span><span>Bài đang mở: chỉ gợi ý bước đầu, cấm đưa đáp án.</span></div>
+            <div><span class="badge ask">Chuyển TA</span><span>Ngoài phạm vi hoặc thiếu tài liệu: chuyển hàng chờ TA.</span></div>
+          </div>
         </section>
       </aside>
     </div>
-    <p class="footnote">Mọi thao tác chỉ thay đổi nội dung trên trang này. Nút “Gửi TA” mô phỏng yêu cầu chuyển người, không gửi tin nhắn thật.</p>
+    <p class="footnote">Prototype mô phỏng theo dữ liệu spec.md của buổi 3. Mọi thao tác tương tác diễn ra trên trang, không gọi backend hay gửi dữ liệu ra ngoài.</p>
   </main>
 
   <script>
-    const conversation = document.querySelector("#conversation");
-    const input = document.querySelector("#question");
-    const scenarioButtons = document.querySelectorAll("[data-scenario]");
-    let activeScenario = "assignment";
-    let followUpShown = false;
+    // 8 Kịch bản chính xác từ spec.md §2
+    const SCENARIOS = [
+      {
+        id: "s1",
+        num: "Kịch bản 1 (Đắt nhất)",
+        shortName: "1. Bài tập đang mở",
+        costBadge: "Đắt nhất · Không chấp nhận",
+        costClass: "cost-unacceptable",
+        userPrompt: "Em cần giải luôn bài tập 3 đang mở, cho em đáp án cuối cùng luôn ạ",
+        layer: "③ Ngoài phạm vi / ④ Domain",
+        costDesc: "Không chấp nhận được (Đắt nhất #1)",
+        badBehavior: "AI đưa luôn đáp án trung bình = 14, trung vị = 11.5 làm học viên chép bài.",
+        haxPair: "G10 (Thu hẹp khi nghi ngờ), G11 (Giải thích lý do vì bài đang mở), G8/G9 (Gợi ý bước đầu)",
+        confidenceText: "Giới hạn nghiêm ngặt: Bài tập đang mở",
+        confidenceType: "warn",
+        response: "Mình không thể đưa hoặc xác nhận đáp án cho bài tập đang mở để bảo đảm mục tiêu tự học của bạn.<br><br>Mình có thể giúp bạn bắt đầu: Trong dữ liệu §3.5 có 8 mức lương mẫu (9, 10, 10, 11, 12, 12, 13, 45). <b>Bước 1:</b> Bạn hãy tính tổng của 8 mức lương này trước nhé.",
+        evidenceDefault: "Tài liệu buổi 3 · §3.5 Bài tập 3 (bài đang mở). Quy tắc: chỉ gợi ý cách làm, không xác nhận đáp số.",
+        evidenceDetail: "Dữ liệu §3.5: [9, 10, 10, 11, 12, 12, 13, 45] triệu đồng. Bài tập đang mở tính điểm.",
+        extraActionName: "Gợi ý tiếp bước 2",
+        extraActionContent: "Gợi ý bước 2: Sau khi có tổng các mức lương, bạn hãy lấy tổng đó chia cho 8 để tìm số trung bình cộng. Với trung vị, hãy tìm vị trí của 2 con số ở chính giữa dãy đã sắp xếp nhé!",
+        taMessage: "Đã gửi yêu cầu hỏi bài tập cho TA. TA trực 08:00–22:00. Bạn hãy tự tính thử bước 1 trong lúc chờ nhé."
+      },
+      {
+        id: "s2",
+        num: "Kịch bản 2 (Đắt nhất)",
+        shortName: "2. Buổi 4 học gì?",
+        costBadge: "Đắt nhất · Sửa được",
+        costClass: "cost-unacceptable",
+        userPrompt: "Buổi 4 học gì, có cần chuẩn bị gì không?",
+        layer: "① Nguồn sự thật",
+        costDesc: "Sửa được (Đắt nhất #2)",
+        badBehavior: "AI bịa: 'buổi 4 học biểu đồ cột và Tableau', tỏ vẻ tự tin dù chưa có tài liệu.",
+        haxPair: "G1/G2 (Minh bạch phạm vi tri thức), G10 (Từ chối đoán mò khi thiếu dữ liệu), PAIR Graceful Failure",
+        confidenceText: "Chỉ có tên đề cương · Chưa có tài liệu chi tiết",
+        confidenceType: "danger",
+        response: "Theo đề cương khoá học, Buổi 4 có chủ đề là <b>“Trực quan hoá dữ liệu”</b>.<br><br>Hiện tại hệ thống chưa được cấp tài liệu chi tiết của Buổi 4 nên mình không thể mô tả cụ thể về nội dung hay công cụ (như Tableau hay các dạng biểu đồ). Bạn hãy theo dõi thông báo từ giảng viên trước buổi học nhé!",
+        evidenceDefault: "Trang khoá học: Tên đề mục Buổi 4. Chưa có tài liệu bài giảng chi tiết.",
+        evidenceDetail: "Kiểm tra cơ sở dữ liệu: Khoá học hiện mới chỉ công bố tài liệu Buổi 3 (§3.1–§3.5). Buổi 4 chưa phát hành slide.",
+        extraActionName: "Xem đề cương các buổi",
+        extraActionContent: "Đề cương khoá học: Buổi 1: Giới thiệu · Buổi 2: Xử lý dữ liệu · Buổi 3: Thống kê mô tả (đang học) · Buổi 4: Trực quan hoá dữ liệu (chưa học).",
+        taMessage: "Đã gửi câu hỏi về tài liệu Buổi 4 cho TA/Giảng viên để kiểm tra lịch phát hành."
+      },
+      {
+        id: "s3",
+        num: "Kịch bản 3",
+        shortName: "3. Slide 12 buổi 3",
+        costBadge: "Sửa được",
+        costClass: "cost-repairable",
+        userPrompt: "Slide 12 của buổi 3 nói gì ạ?",
+        layer: "① Nguồn sự thật",
+        costDesc: "Sửa được",
+        badBehavior: "AI 'bịa' ra nội dung của slide 12 hoặc trích dẫn nguồn không có.",
+        haxPair: "G1/G2 (Minh bạch giới hạn dữ liệu), G10 (Dừng lại khi không tìm thấy nguồn)",
+        confidenceText: "Không tìm thấy nguồn: Không có slide đánh số",
+        confidenceType: "warn",
+        response: "Tài liệu Buổi 3 hiện tại được biên soạn theo các mục từ <b>§3.1 đến §3.5</b>, không có hệ thống slide đánh số nên mình không thể tìm được “slide 12”.<br><br>Bạn đang muốn tìm hiểu về phần kiến thức nào? Bạn có thể chọn các mục bên dưới để mình hỗ trợ nhé.",
+        evidenceDefault: "Tài liệu Buổi 3 chỉ gồm 5 mục §3.1–§3.5, không có trang slide đánh số.",
+        evidenceDetail: "Danh sách mục: §3.1 Trung bình cộng · §3.2 Trung vị · §3.3 Phương sai & Độ lệch chuẩn · §3.4 Ngoại lai · §3.5 Bài tập 3.",
+        extraActionName: "Xem mục §3.1–§3.5",
+        extraActionContent: "Các mục hiện có: §3.1 Trung bình cộng · §3.2 Trung vị · §3.3 Phương sai & độ lệch chuẩn · §3.4 Giá trị ngoại lai · §3.5 Bài tập 3.",
+        taMessage: "Đã chuyển thắc mắc về slide cho TA để kiểm tra phiên bản slide bài giảng trên lớp."
+      },
+      {
+        id: "s4",
+        num: "Kịch bản 4",
+        shortName: "4. Trung vị vs Trung bình",
+        costBadge: "Sửa được",
+        costClass: "cost-repairable",
+        userPrompt: "Trung vị khác trung bình cộng chỗ nào ạ? Khi nào dùng cái nào?",
+        layer: "② Mơ hồ / Thiếu thông tin",
+        costDesc: "Sửa được",
+        badBehavior: "AI trả lời lý thuyết chung chung, không gắn ví dụ thực tế khiến học viên hiểu nhầm.",
+        haxPair: "G11 (Giải thích gắn với ngữ cảnh dữ liệu thực tế), PAIR Explainability",
+        confidenceText: "Giải thích khái niệm kèm ví dụ thực tế (§3.5)",
+        confidenceType: "info",
+        response: "• <b>Trung bình cộng:</b> Lấy tổng chia cho số lượng; rất nhạy cảm và dễ bị kéo lệch bởi giá trị ngoại lai (outlier).<br>• <b>Trung vị:</b> Là giá trị nằm chính giữa dãy số sau khi đã sắp xếp thứ tự; không bị ảnh hưởng bởi giá trị ngoại lai.<br><br><b>Khi nào dùng?</b> Trong bài tập 3 (§3.5) với 8 mức lương: <i>9, 10, 10, 11, 12, 12, 13, 45</i> (triệu): con số 45 là ngoại lai kéo trung bình lên tới 15.25 triệu, trong khi trung vị là 11.5 triệu phản ánh đúng mức lương của số đông hơn.",
+        evidenceDefault: "Tài liệu buổi 3 · §3.1 (Trung bình cộng), §3.2 (Trung vị), §3.4 (Ngoại lai), §3.5 (Ví dụ lương).",
+        evidenceDetail: "Dãy sắp xếp: 9, 10, 10, 11, 12, 12, 13, 45. Trung vị = (11 + 12)/2 = 11.5. Trung bình = 122/8 = 15.25.",
+        extraActionName: "Xem minh họa tính trung vị",
+        extraActionContent: "Dãy có 8 số (chẵn). Hai số giữa là số thứ 4 (11) và thứ 5 (12). Trung vị = (11 + 12) / 2 = 11.5 triệu.",
+        taMessage: "Đã ghi nhận câu hỏi. Bạn có thể gửi thêm thắc mắc nếu muốn TA giải thích kĩ hơn trên lớp."
+      },
+      {
+        id: "s5",
+        num: "Kịch bản 5",
+        shortName: "5. Độ lệch chuẩn là gì?",
+        costBadge: "Nhẹ",
+        costClass: "cost-light",
+        userPrompt: "Cái độ lệch ấy là gì ạ, em đọc không hiểu.",
+        layer: "② Mơ hồ / Thiếu thông tin",
+        costDesc: "Nhẹ",
+        badBehavior: "AI giải thích quá trừu tượng hoặc nhầm lẫn giữa Phương sai và Độ lệch chuẩn.",
+        haxPair: "G10 (Làm rõ câu hỏi mơ hồ), G11 (Giải thích trực quan, dễ hiểu)",
+        confidenceText: "Khái niệm trực quan: Độ lệch chuẩn vs Phương sai (§3.3)",
+        confidenceType: "info",
+        response: "<b>Độ lệch chuẩn (Standard Deviation)</b> đơn giản là thước đo xem các con số trong dữ liệu <i>trải rộng (phân tán)</i> xa hay gần so với mức trung bình:<br><br>• <b>Độ lệch nhỏ:</b> Các giá trị nằm sát nhau quanh mức trung bình (dữ liệu đồng đều).<br>• <b>Độ lệch lớn:</b> Các giá trị chênh lệch nhau rất xa (dữ liệu biến động mạnh).<br><br><i>Lưu ý:</i> Phương sai (Variance) là bình phương của độ lệch chuẩn. Vì phương sai mang đơn vị bình phương khó hiểu, nên người ta thường dùng độ lệch chuẩn để có cùng đơn vị với dữ liệu gốc.",
+        evidenceDefault: "Tài liệu buổi 3 · §3.3 Phương sai và độ lệch chuẩn.",
+        evidenceDetail: "Công thức mẫu: s = sqrt(sum((x - x_tb)^2) / (n - 1)). Đơn vị đo giống dữ liệu ban đầu.",
+        extraActionName: "Xem ví dụ thực tế",
+        extraActionContent: "Ví dụ: Lớp A toàn điểm 7, 8 (độ lệch chuẩn nhỏ ~0.7). Lớp B có bạn điểm 1, bạn điểm 10 (độ lệch chuẩn lớn ~4.5 dù trung bình bằng nhau).",
+        taMessage: "Đã gửi yêu cầu hỗ trợ giảng giải cho TA."
+      },
+      {
+        id: "s6",
+        num: "Kịch bản 6",
+        shortName: "6. Hạn nộp & Hàm Excel",
+        costBadge: "Sửa được",
+        costClass: "cost-repairable",
+        userPrompt: "Hạn nộp bài 3 là khi nào ạ? Tính độ lệch chuẩn bằng Excel thì dùng hàm gì?",
+        layer: "② Mơ hồ / Thiếu thông tin",
+        costDesc: "Sửa được",
+        badBehavior: "AI lẫn lộn deadline bài tập hoặc nhầm hàm STDEV.P và STDEV.S.",
+        haxPair: "Tách bạch 2 nguồn dữ liệu (Lịch khoá học & Công cụ Excel), Trả lời đúng thẩm quyền",
+        confidenceText: "Tra cứu Trang khoá học & Tài liệu §3.3",
+        confidenceType: "info",
+        response: "Câu hỏi của bạn gồm 2 ý riêng biệt:<br><br><b>1. Hạn nộp Bài 3:</b> Theo thông báo trên trang khoá học, hạn chót là <b>23:59 Chủ Nhật tuần này</b>.<br><br><b>2. Hàm Excel tính độ lệch chuẩn:</b><br>• Dùng <code>=STDEV.S(...)</code>: nếu tính trên <i>dữ liệu mẫu (Sample)</i> — đây là hàm bạn nên dùng cho Bài tập 3.<br>• Dùng <code>=STDEV.P(...)</code>: nếu tính cho <i>toàn bộ tổng thể (Population)</i>.",
+        evidenceDefault: "Trang khoá học (Lịch nộp bài tập) & §3.3 Tài liệu (Phân biệt mẫu và tổng thể).",
+        evidenceDetail: "Deadline: Chủ Nhật 23:59. Bài tập 3 là mẫu 8 nhân viên -> dùng hàm STDEV.S.",
+        extraActionName: "Xem cú pháp hàm Excel",
+        extraActionContent: "Cú pháp mẫu trong Excel: =STDEV.S(A1:A8) với A1:A8 là cột chứa 8 mức lương.",
+        taMessage: "Đã ghi nhận yêu cầu. Deadline chính thức được chốt trên trang Portal."
+      },
+      {
+        id: "s7",
+        num: "Kịch bản 7",
+        shortName: "7. Nản lòng / Đánh giá",
+        costBadge: "Nhẹ",
+        costClass: "cost-light",
+        userPrompt: "Em có cần làm lại phần trung vị không ạ? Em chán quá.",
+        layer: "③ Ngoài phạm vi / ④ Domain (Cảm xúc)",
+        costDesc: "Nhẹ",
+        badBehavior: "AI phán xét năng lực người học ('em yếu', 'em lười'), làm học viên mất tự tin.",
+        haxPair: "Nguyên tắc cấm #3 (Không phán xét năng lực người học), PAIR Hỗ trợ cảm xúc an toàn",
+        confidenceText: "Đồng hành học tập · Tuyệt đối không phán xét năng lực",
+        confidenceType: "warn",
+        response: "Học bài lúc tối muộn rất dễ bị mệt và nản, điều này hoàn toàn bình thường bạn nhé!<br><br>Mình không đưa ra đánh giá hay phán xét về năng lực học của bạn, nhưng phần Trung vị (§3.2) là kiến thức nền tảng rất ngắn và quan trọng cho các bài tới. Nếu thấy mệt, bạn có thể nghỉ ngơi một chút; khi nào sẵn sàng, mình có thể tóm tắt nhanh 2 bước tìm trung vị trong 1 phút giúp bạn nhé!",
+        evidenceDefault: "Nguyên tắc sản phẩm: AI chỉ đóng vai trò trợ lý học tập, không đánh giá năng lực người học.",
+        evidenceDetail: "Tiêu chí 3 của spec.md: Không nhận xét năng lực người học hoặc khẳng định họ 'đã hiểu/chưa hiểu'.",
+        extraActionName: "Xem tóm tắt nhanh 2 bước",
+        extraActionContent: "2 bước tìm trung vị: Bước 1: Xếp các con số từ bé đến lớn. Bước 2: Chọn con số đứng chính giữa (nếu chẵn thì lấy trung bình 2 số ở giữa). Xong!",
+        taMessage: "Đã gửi lời nhắn động viên và câu hỏi tới TA hỗ trợ ngoài giờ."
+      },
+      {
+        id: "s8",
+        num: "Kịch bản 8",
+        shortName: "8. Buổi 7 học gì?",
+        costBadge: "Sửa được",
+        costClass: "cost-repairable",
+        userPrompt: "Buổi 7 học gì, em cần tìm trước để chuẩn bị luôn",
+        layer: "① Nguồn sự thật",
+        costDesc: "Sửa được",
+        badBehavior: "AI bịa quá nhiều nội dung chuyên sâu của Buổi 7 dù tài liệu chưa phát hành.",
+        haxPair: "G1/G2 (Giới hạn phạm vi tri thức hiện có), G10 (Từ chối hallucination)",
+        confidenceText: "Chỉ có tên đề cương · Chưa phát hành giáo trình",
+        confidenceType: "danger",
+        response: "Theo đề cương khoá học, Buổi 7 có tiêu đề: <b>“Kiểm định giả thuyết và p-value”</b>.<br><br>Hiện tại tài liệu chi tiết và bài tập của Buổi 7 chưa được tải lên hệ thống. Để chuẩn bị tốt nhất, bạn chỉ cần nắm vững phần Thống kê mô tả ở Buổi 3 và Buổi 4 trước, không cần học trước phần nâng cao của Buổi 7 đâu nhé!",
+        evidenceDefault: "Trang khoá học: Tên đề cương Buổi 7. Chưa có tài liệu chi tiết.",
+        evidenceDetail: "Đề cương ghi: 'Buổi 7: Kiểm định giả thuyết và p-value'. Chưa có mục chi tiết.",
+        extraActionName: "Xem đề cương đầy đủ",
+        extraActionContent: "Lộ trình: B1: Nhập môn · B2: Làm sạch · B3: Thống kê mô tả · B4: Trực quan hoá · B5: Xác suất · B6: Phân phối · B7: Kiểm định giả thuyết.",
+        taMessage: "Đã chuyển câu hỏi về giáo trình Buổi 7 cho phòng đào tạo/TA."
+      }
+    ];
+
+    // Trạng thái hiện tại
+    let currentScenarioIndex = 0;
+    let extraActionTriggered = false;
     let taRequested = false;
     let evidenceExpanded = false;
-    let sectionsExpanded = false;
 
-    function render() {
-      scenarioButtons.forEach((button) => {
-        button.setAttribute("aria-pressed", String(button.dataset.scenario === activeScenario));
+    const conversationEl = document.querySelector("#conversation");
+    const inputEl = document.querySelector("#question");
+    const scenarioGridEl = document.querySelector("#scenarioGrid");
+
+    // Khởi tạo các nút chọn 8 kịch bản
+    function initScenarioButtons() {
+      scenarioGridEl.innerHTML = "";
+      SCENARIOS.forEach((item, index) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "scenario-btn";
+        btn.setAttribute("data-index", index);
+        btn.setAttribute("aria-pressed", index === 0 ? "true" : "false");
+        btn.innerHTML = `
+          <div class="scenario-btn-top">
+            <span class="scenario-btn-num">${item.shortName}</span>
+            <span class="scenario-btn-cost ${item.costClass}">${item.costBadge}</span>
+          </div>
+          <div class="scenario-btn-desc">“${item.userPrompt}”</div>
+        `;
+        btn.addEventListener("click", () => switchScenario(index));
+        scenarioGridEl.appendChild(btn);
       });
-
-      const assignment = activeScenario === "assignment";
-      const userText = assignment
-        ? "Em giải luôn bài tập 3 đang mở được không? Cho em đáp án cuối cùng."
-        : "Slide 12 của buổi 3 nói gì ạ?";
-
-      const response = assignment
-        ? `<div class="confidence">Giới hạn rõ: bài tập đang mở</div>
-           <div>Mình không thể đưa hoặc xác nhận đáp án cho bài đang mở. Mình có thể giúp bạn bắt đầu: hãy xác định có bao nhiêu giá trị trong danh sách ở §3.5, rồi thử tính tổng trước. Bạn làm thử bước đó nhé?</div>
-           <div class="evidence">${evidenceExpanded ? "§3.5 dùng dữ liệu giả lập về lương tháng của 8 nhân viên: 9, 10, 10, 11, 12, 12, 13, 45 triệu đồng/người/tháng. Đây là ví dụ để luyện tính trung bình và trung vị, không phải dữ liệu người thật. Bài tập đang mở nên trợ lý chỉ gợi ý cách làm, không đưa đáp án." : `Căn cứ: <button type="button" data-action="evidence">Tài liệu buổi 3 · §3.5 Bài tập 3</button>. Đây là gợi ý, không phải lời giải.`}</div>
-           ${followUpShown ? `<div class="notice success">Gợi ý tiếp: hãy cộng 8 mức lương trước, sau đó chia tổng cho 8 để tính trung bình. Bạn tự tính kết quả rồi gửi lại để mình kiểm tra cách làm (không xác nhận đáp số bài đang mở).</div>` : ""}
-           ${taRequested ? `<div class="notice success" role="status">Yêu cầu đã được thêm vào hàng chờ TA (mô phỏng). Giờ TA: 08:00–22:00. Bạn vẫn có thể tiếp tục xem gợi ý trong lúc chờ.</div>` : ""}
-           <div class="actions">
-             <button class="button soft" type="button" data-action="hint">Gợi ý thêm một bước</button>
-             <button class="button" type="button" data-action="ta">Gửi câu hỏi cho TA</button>
-           </div>`
-        : `<div class="confidence">Không đủ căn cứ để trả lời</div>
-           <div>Tài liệu buổi 3 hiện có các mục §3.1–§3.5, không có slide được đánh số nên mình không thể xác định “slide 12” nói gì. Bạn có thể hỏi theo mục tài liệu, hoặc gửi câu hỏi cho TA/giảng viên.</div>
-           <div class="evidence">${evidenceExpanded ? "Đề bài xác nhận tài liệu buổi 3 chỉ có các mục §3.1–§3.5, không có slide đánh số." : `Căn cứ đã kiểm tra: <button type="button" data-action="evidence">Tài liệu buổi 3 · §3.1–§3.5</button>. Không tìm thấy slide 12.`}</div>
-           ${sectionsExpanded ? `<div class="notice">§3.1 Trung bình cộng · §3.2 Trung vị · §3.3 Phương sai và độ lệch chuẩn · §3.4 Giá trị ngoại lai · §3.5 Bài tập 3</div>` : ""}
-           ${taRequested ? `<div class="notice success" role="status">Yêu cầu đã được thêm vào hàng chờ TA (mô phỏng). Giờ TA: 08:00–22:00.</div>` : ""}
-           <div class="actions">
-             <button class="button soft" type="button" data-action="section">Xem các mục §3.1–§3.5</button>
-             <button class="button" type="button" data-action="ta">Gửi câu hỏi cho TA</button>
-           </div>`;
-
-      conversation.innerHTML = `
-        <div class="message user">${userText}</div>
-        <div class="message assistant">
-          <div class="assistant-label">Trợ lý học bài · AI</div>
-          ${response}
-        </div>`;
     }
 
-    function handleQuestion(text) {
-      const normalized = text.toLowerCase();
-      if (normalized.includes("slide") || normalized.includes("buổi 4") || normalized.includes("buổi 7")) {
-        activeScenario = "missing";
-        followUpShown = false;
-        taRequested = false;
-      } else {
-        activeScenario = "assignment";
-        followUpShown = false;
-        taRequested = false;
-      }
+    // Chuyển kịch bản
+    function switchScenario(index) {
+      currentScenarioIndex = index;
+      extraActionTriggered = false;
+      taRequested = false;
       evidenceExpanded = false;
-      sectionsExpanded = false;
+
+      // Cập nhật trạng thái nút
+      const allBtns = scenarioGridEl.querySelectorAll(".scenario-btn");
+      allBtns.forEach((b, idx) => {
+        b.setAttribute("aria-pressed", idx === index ? "true" : "false");
+      });
+
       render();
-      const userMessage = document.createElement("div");
-      userMessage.className = "message user";
-      userMessage.textContent = text;
-      conversation.prepend(userMessage);
     }
 
-    scenarioButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        activeScenario = button.dataset.scenario;
-        followUpShown = false;
-        taRequested = false;
-        evidenceExpanded = false;
-        sectionsExpanded = false;
+    // Render giao diện chat & thông tin phân tích
+    function render() {
+      const cur = SCENARIOS[currentScenarioIndex];
+
+      // Cập nhật thông tin phân tích ở thanh bên
+      document.querySelector("#metaTitle").textContent = cur.num + ": " + cur.shortName;
+      document.querySelector("#metaLayer").textContent = cur.layer;
+      document.querySelector("#metaCost").innerHTML = `<span class="badge ${cur.costClass === 'cost-unacceptable' ? 'danger' : 'ask'}">${cur.costDesc}</span>`;
+      document.querySelector("#metaBad").textContent = cur.badBehavior;
+      document.querySelector("#metaHAX").innerHTML = cur.haxPair;
+
+      // Render nội dung hội thoại
+      const evidenceText = evidenceExpanded ? cur.evidenceDetail : `Căn cứ: <button type="button" data-action="toggle-evidence">${cur.evidenceDefault}</button> (Nhấn để xem chi tiết)`;
+
+      conversationEl.innerHTML = `
+        <div class="message user">${cur.userPrompt}</div>
+        <div class="message assistant">
+          <div class="assistant-label">Trợ lý học bài · AI (Dữ liệu chuẩn T2)</div>
+          <div class="confidence ${cur.confidenceType}">${cur.confidenceText}</div>
+          <div>${cur.response}</div>
+          <div class="evidence">${evidenceText}</div>
+          
+          ${extraActionTriggered ? `<div class="notice success" role="status"><b>Hỗ trợ bổ sung:</b> ${cur.extraActionContent}</div>` : ""}
+          ${taRequested ? `<div class="notice success" role="status">${cur.taMessage}</div>` : ""}
+
+          <div class="actions">
+            <button class="button soft" type="button" data-action="extra">${cur.extraActionName}</button>
+            <button class="button" type="button" data-action="ta">Gửi câu hỏi cho TA</button>
+          </div>
+        </div>
+      `;
+
+      conversationEl.scrollTop = conversationEl.scrollHeight;
+    }
+
+    // Xử lý các nút bấm tương tác trong hội thoại
+    conversationEl.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+      const action = btn.dataset.action;
+
+      if (action === "extra") {
+        extraActionTriggered = true;
         render();
-      });
-    });
-
-    conversation.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-action]");
-      if (!button) return;
-
-      if (button.dataset.action === "hint") followUpShown = true;
-      if (button.dataset.action === "ta") taRequested = true;
-      if (button.dataset.action === "section") sectionsExpanded = true;
-      if (button.dataset.action === "evidence") evidenceExpanded = true;
-      render();
-    });
-
-    document.querySelector("#composer").addEventListener("submit", (event) => {
-      event.preventDefault();
-      const text = input.value.trim();
-      if (!text) {
-        input.focus();
-        return;
+      } else if (action === "ta") {
+        taRequested = true;
+        render();
+      } else if (action === "toggle-evidence") {
+        evidenceExpanded = !evidenceExpanded;
+        render();
       }
-      handleQuestion(text);
-      input.value = "";
-      input.focus();
     });
 
+    // Xử lý khi người dùng nhập câu hỏi vào ô input
+    function handleCustomInput(text) {
+      const q = text.toLowerCase();
+      let matchedIndex = 0;
+
+      if (q.includes("buổi 4") || q.includes("tableau") || q.includes("trực quan")) {
+        matchedIndex = 1;
+      } else if (q.includes("slide") || q.includes("slide 12")) {
+        matchedIndex = 2;
+      } else if (q.includes("trung vị") && (q.includes("trung bình") || q.includes("khác"))) {
+        matchedIndex = 3;
+      } else if (q.includes("độ lệch") || q.includes("phương sai")) {
+        matchedIndex = 4;
+      } else if (q.includes("hạn nộp") || q.includes("excel") || q.includes("deadline")) {
+        matchedIndex = 5;
+      } else if (q.includes("chán") || q.includes("nản") || q.includes("làm lại") || q.includes("yếu")) {
+        matchedIndex = 6;
+      } else if (q.includes("buổi 7") || q.includes("p-value") || q.includes("giả thuyết")) {
+        matchedIndex = 7;
+      } else {
+        matchedIndex = 0;
+      }
+
+      switchScenario(matchedIndex);
+    }
+
+    document.querySelector("#composer").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const val = inputEl.value.trim();
+      if (!val) return;
+      handleCustomInput(val);
+      inputEl.value = "";
+    });
+
+    // Khởi chạy khi load trang
+    initScenarioButtons();
     render();
   </script>
 </body>
