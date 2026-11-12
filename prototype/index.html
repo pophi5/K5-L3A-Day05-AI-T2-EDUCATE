@@ -167,7 +167,7 @@
       const response = assignment
         ? `<div class="confidence">Giới hạn rõ: bài tập đang mở</div>
            <div>Mình không thể đưa hoặc xác nhận đáp án cho bài đang mở. Mình có thể giúp bạn bắt đầu: hãy xác định có bao nhiêu giá trị trong danh sách ở §3.5, rồi thử tính tổng trước. Bạn làm thử bước đó nhé?</div>
-           <div class="evidence">${evidenceExpanded ? "§3.5 ghi bài tập 3 với 8 mức lương dựng: 9, 10, 10, 11, 12, 12, 13, 45 (triệu đồng). Bài tập đang mở; trợ lý chỉ gợi ý cách làm, không đưa đáp án." : `Căn cứ: <button type="button" data-action="evidence">Tài liệu buổi 3 · §3.5 Bài tập 3</button>. Đây là gợi ý, không phải lời giải.`}</div>
+           <div class="evidence">${evidenceExpanded ? "§3.5 dùng dữ liệu giả lập về lương tháng của 8 nhân viên: 9, 10, 10, 11, 12, 12, 13, 45 triệu đồng/người/tháng. Đây là ví dụ để luyện tính trung bình và trung vị, không phải dữ liệu người thật. Bài tập đang mở nên trợ lý chỉ gợi ý cách làm, không đưa đáp án." : `Căn cứ: <button type="button" data-action="evidence">Tài liệu buổi 3 · §3.5 Bài tập 3</button>. Đây là gợi ý, không phải lời giải.`}</div>
            ${followUpShown ? `<div class="notice success">Gợi ý tiếp: hãy cộng 8 mức lương trước, sau đó chia tổng cho 8 để tính trung bình. Bạn tự tính kết quả rồi gửi lại để mình kiểm tra cách làm (không xác nhận đáp số bài đang mở).</div>` : ""}
            ${taRequested ? `<div class="notice success" role="status">Yêu cầu đã được thêm vào hàng chờ TA (mô phỏng). Giờ TA: 08:00–22:00. Bạn vẫn có thể tiếp tục xem gợi ý trong lúc chờ.</div>` : ""}
            <div class="actions">
